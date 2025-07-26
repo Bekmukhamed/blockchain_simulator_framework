@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import simpy, argparse, random, time
+import block_check
 
 # Globals
 network_data = io_requests = total_tx = total_coins = 0
@@ -7,6 +8,7 @@ pool = []
 HEADER_SIZE = 1024
 YEAR = 365 * 24 * 3600
 start_time = time.time()
+
 # Format large numbers
 def human(n):
     a = abs(n)
@@ -19,6 +21,7 @@ def human(n):
     else:
         return str(int(n))
     return f"{int(v) if v.is_integer() else f'{v:.1f}'}{s}"
+
 
 class Block:
     def __init__(self, i, tx, dt):
@@ -163,12 +166,14 @@ def coord(env, nodes, miners, bt, diff0, blocks_limit, blk_sz, print_int, dbg,
               f"Tx:{total_tx} C:{human(total_coins)} Pool:{len(pool)} "
               f"NMB:{network_data/1e6:.2f} IO:{io_requests}")
         print(f"\nSimulation completed in {simulation_time:.2f} seconds")
+        print(f"Simulated blockchain time: {env.now:.2f} seconds")
     else:
         print(f"[******] End B:{bc} abt:{abt:.2f}s tps:{tps_total:.2f} "
               f"infl:{infl_total:.2f}% Diff:{human(diff)} H:{human(th)} "
               f"Tx:{total_tx} C:{human(total_coins)} Pool:{len(pool)} "
               f"NMB:{network_data/1e6:.2f} IO:{io_requests}")
         print(f"\nSimulation completed in {simulation_time:.2f} seconds")
+        print(f"Simulated blockchain time: {env.now:.2f} seconds")
 
 def main():
     p = argparse.ArgumentParser()
@@ -198,6 +203,16 @@ def main():
     blocks_limit = args.blocks_limit
     if blocks_limit is None and args.years:
         blocks_limit = int(args.years * YEAR / args.blocktime)
+
+    if args.transactions > 0:
+        total_tx = args.wallets * args.transactions
+        expected_blocks = block_check.validate_blocks_count(total_tx, args.blocksize, blocks_limit)
+        if blocks_limit is None:
+            blocks_limit = expected_blocks
+            print(f"Auto-setting blocks to {expected_blocks} based on workload")
+        elif expected_blocks < blocks_limit:
+            print(f"Limiting blocks to {expected_blocks} (workload-based) instead of {blocks_limit} (time-based)")
+            blocks_limit = expected_blocks
 
     env = simpy.Environment()
     for i in range(args.wallets):
