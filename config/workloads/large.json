@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 54adcc3f4b790c924bff49b0e700965b2eef3270
 {
   "name": "Large Workload",
   "description": "1000 wallets with 1000 transactions each generated with interval of 0.01",
