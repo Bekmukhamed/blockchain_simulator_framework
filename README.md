@@ -1,1 +1,7 @@
-# blockchain_simulator_framework
+
+
+## Installation
+
+```bash
+pip install simpy
+```

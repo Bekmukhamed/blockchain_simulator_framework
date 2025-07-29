@@ -1,0 +1,8 @@
+{
+    "name": "Bitcoin",
+    "symbol": "BTC",
+    "reward": 50,
+    "halving": 210000,
+    "blocktime": 600,
+    "blocksize": 4096
+}
