@@ -1,0 +1,7 @@
+{
+  "name": "Small Workload",
+  "description": "10 wallets with 10 transactions each generated with interval of 10.0",
+  "wallets": 10,
+  "transactions_per_wallet": 10,
+  "transaction_interval": 10.0
+}
