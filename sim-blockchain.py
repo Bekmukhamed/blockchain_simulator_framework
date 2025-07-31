@@ -11,7 +11,7 @@ import simulation.globals as sim_globals
 from simulation.core import Node, Miner, wallet
 from simulation.coordinator import coord
 from simulation.utils import load_config, load_chain_config, load_workload_config, merge_configs, apply_workload_config
-import block_check
+import simulation.utils.block_check as block_check
 
 
 def reset_globals():

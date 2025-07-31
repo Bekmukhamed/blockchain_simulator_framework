@@ -1,6 +1,6 @@
 import argparse
 from config.loader import get_defaults
-import block_check
+import simulation.utils.block_check as block_check
 
 def parse_args():
     p = argparse.ArgumentParser()
