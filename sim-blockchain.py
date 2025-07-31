@@ -152,4 +152,5 @@ if __name__ == "__main__":
         exit(main())
     except KeyboardInterrupt:
         print("Simulation interrupted by user")
+        
         sys.exit(130)
