@@ -126,7 +126,7 @@ def main():
         env.process(wallet(env, i, sim_config['transactions'], sim_config['interval']))
     
 
-    nodes = [Node(env, i) for i in range(sim_config['nodes'])]
+    nodes = [Node(env, i, blocktime=sim_config['blocktime']) for i in range(sim_config['nodes'])]
     for n in nodes:
         n.neighbors = random.sample([x for x in nodes if x != n], sim_config['neighbors'])
 
@@ -148,4 +148,8 @@ def main():
 
 
 if __name__ == "__main__":
-    exit(main())
+    try:
+        exit(main())
+    except KeyboardInterrupt:
+        print("Simulation interrupted by user")
+        sys.exit(130)
