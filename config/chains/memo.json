@@ -1,0 +1,8 @@
+{
+    "name": "MemoCoin",
+    "symbol": "MEMO",
+    "reward": 51.8457072,
+    "halving": 9644000,
+    "blocktime": 3.27,
+    "blocksize": 32768
+}
