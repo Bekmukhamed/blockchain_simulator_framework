@@ -10,8 +10,8 @@
         "transactions": 0,
         "interval": 10.0,
         "blocksize": 4096,
-        "blocks": null,
-        "print": 144,
+        "blocks": 525600,
+        "print": 1440,
         "debug": false,
         "halving": 210000
     }
