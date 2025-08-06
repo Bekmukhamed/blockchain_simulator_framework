@@ -2,9 +2,10 @@
 # blockchain_simulator_framework
 
 ## Examples
+### give mode flag to set if we want shards or not.
 ### For 10 years
 ```
-python sim-blockchain.py --chain btc --years 10
+python sim-blockchain.py --chain btc --mode sharded --years 10
 ```
 
 ### Small workload
