@@ -1,0 +1,8 @@
+{
+    "name": "Litecoin",
+    "symbol": "LTC",
+    "reward": 50,
+    "halving": 840000,
+    "blocktime": 150,
+    "blocksize": 4096
+}

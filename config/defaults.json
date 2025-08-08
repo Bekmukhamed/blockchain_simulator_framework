@@ -1,0 +1,18 @@
+{
+    "simulation": {
+        "nodes": 1000,
+        "neighbors": 500,
+        "miners": 1000,
+        "hashrate": 1000000,
+        "blocktime": 600,
+        "reward": 50,
+        "wallets": 1000,
+        "transactions": 1000,
+        "interval": 10.0,
+        "blocksize": 4096,
+        "blocks": 525600,
+        "print": 1440,
+        "debug": false,
+        "halving": 210000
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "name": "Dogecoin",
+    "symbol": "DOGE",
+    "reward": 10000,
+    "halving": 0,
+    "blocktime": 60,
+    "blocksize": 4096
+}

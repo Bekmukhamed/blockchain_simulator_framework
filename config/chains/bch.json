@@ -1,0 +1,8 @@
+{
+    "name": "Bitcoin Cash",
+    "symbol": "BCH",
+    "reward": 12.5,
+    "halving": 210000,
+    "blocktime": 600,
+    "blocksize": 131072
+}

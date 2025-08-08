@@ -1,0 +1,7 @@
+{
+  "name": "Large Workload",
+  "description": "1000 wallets with 1000 transactions each generated with interval of 0.01",
+  "wallets": 1000,
+  "transactions_per_wallet": 1000,
+  "transaction_interval": 0.01
+}
