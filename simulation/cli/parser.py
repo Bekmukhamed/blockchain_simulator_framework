@@ -22,6 +22,14 @@ def parse_args():
     p.add_argument("--halving", dest="halving_interval", type=int, default=210000)
     p.add_argument("--chain", type=str)
     p.add_argument("--workload", type=str)
+    
+    # Sharding options
+    p.add_argument("--shards", type=int, help="Enable dynamic sharding with this many initial shards")
+    p.add_argument("--max-shards", type=int, help="Maximum number of shards (default 16)")
+    p.add_argument("--load-threshold", type=float, help="Load threshold for shard splitting (default 50)")
+    p.add_argument("--turbo", action="store_true", help="Enable turbo mode for maximum speed (disables dynamic adaptation)")
+    p.add_argument("--fast", action="store_true", help="Enable fast mode for improved speed (disables cross-shard tracking)")
+    
     args = p.parse_args()
 
     merged = get_defaults(args)

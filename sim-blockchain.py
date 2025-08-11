@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 import simpy
-import argparse
 import random
 import os
 import sys
+import argparse
+import json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import simulation.globals as sim_globals
 from simulation.core import Node, Miner, wallet
 from simulation.coordinator import coord
-from simulation.utils import load_config, load_chain_config, load_workload_config, merge_configs, apply_workload_config
-import simulation.utils.block_check as block_check
+from simulation.cli.parser import parse_args  # Use existing parser
+from config.loader import get_defaults
 
 
 def reset_globals():
@@ -23,54 +24,34 @@ def reset_globals():
     sim_globals.start_time = __import__('time').time()
 
 
-def main():
-    p = argparse.ArgumentParser(description='Blockchain Simulator')
-    p.add_argument("--chain", type=str, help="Use predefined chain configuration (btc, bch, ltc, doge, memo)")
-    p.add_argument("--workload", type=str, help="Use predefined workload configuration (small, medium, large)")
-    p.add_argument("--nodes", type=int, help="Number of nodes")
-    p.add_argument("--neighbors", type=int, help="Number of neighbors per node")
-    p.add_argument("--blocksize", type=int, help="Block size in transactions")
-    p.add_argument("--blocktime", type=float, help="Target block time in seconds")
-    p.add_argument("--miners", type=int, help="Number of miners")
-    p.add_argument("--hashrate", type=float, help="Hash rate per miner")
-    p.add_argument("--difficulty", dest="diff0", type=float, help="Initial difficulty")
-    p.add_argument("--blocks", dest="blocks_limit", type=int, help="Max number of blocks (optional)")
-    p.add_argument("--years", dest="years", type=float, help="Run sim for this many years if --blocks omitted")
-    p.add_argument("--wallets", type=int, help="Number of wallets")
-    p.add_argument("--transactions", type=int, help="Transactions per wallet")
-    p.add_argument("--interval", type=float, help="Transaction interval")
-    p.add_argument("--print", dest="print_int", type=int, help="Blocks interval for summary (default 144)")
-    p.add_argument("--debug", action="store_true", help="Enable debug output")
-    p.add_argument("--reward", dest="init_reward", type=float, help="Initial coinbase reward (default 50)")
-    p.add_argument("--halving", dest="halving_interval", type=int, help="Blocks between reward halving (default 210000; 0 disables halving)")
+def load_config(path):
+    """Load default configuration from JSON file"""
+    with open(path, 'r') as f:
+        return json.load(f)
 
-    args = p.parse_args()
+
+def main():
+    # Use the centralized parser
+    args = parse_args()
 
     reset_globals()
     
     config_dir = os.path.join(os.path.dirname(__file__), 'config')
     defaults_path = os.path.join(config_dir, 'defaults.json')
     
-    config = load_config(defaults_path)
+    try:
+        config = load_config(defaults_path)
+    except FileNotFoundError:
+        # Use basic defaults if file not found
+        config = {
+            'simulation': {
+                'nodes': 10, 'neighbors': 3, 'blocksize': 4096, 'blocktime': 600,
+                'miners': 5, 'hashrate': 1e6, 'wallets': 10, 'transactions': 0,
+                'interval': 10.0, 'print': 144, 'debug': False, 'reward': 50,
+                'halving': 210000
+            }
+        }
     
-    if args.chain:
-        try:
-            chain_config = load_chain_config(args.chain, config_dir)
-            config = merge_configs(config, chain_config)
-            print(f"Using {chain_config['name']} ({chain_config['symbol']}) configuration")
-        except ValueError as e:
-            print(f"Error: {e}")
-            return 1
-    
-    if args.workload:
-        try:
-            workload_config = load_workload_config(args.workload, config_dir)
-            config = apply_workload_config(config, workload_config)
-            print(f"Using {workload_config['name']}: {workload_config['description']}")
-        except ValueError as e:
-            print(f"Error: {e}")
-            return 1
-
     sim_config = config['simulation']
     
     if args.nodes is not None:
@@ -111,7 +92,8 @@ def main():
 
     if sim_config['transactions'] > 0:
         total_tx = sim_config['wallets'] * sim_config['transactions']
-        expected_blocks = block_check.validate_blocks_count(total_tx, sim_config['blocksize'], blocks_limit)
+
+        expected_blocks = (total_tx + sim_config['blocksize'] - 1) // sim_config['blocksize']
         if blocks_limit is None:
             blocks_limit = expected_blocks
             print(f"Auto-setting blocks to {expected_blocks} based on workload")
@@ -132,6 +114,29 @@ def main():
 
     miners = [Miner(i, sim_config['hashrate']) for i in range(sim_config['miners'])]
 
+    # Sharding setup
+    shard_manager = None
+    if args.shards:
+        from simulation.sharding.sharding import DynamicShardManager
+        
+        shard_manager = DynamicShardManager(
+            initial_shard_count=args.shards,
+            max_shards=args.max_shards or 16
+        )
+        
+        # Apply speed optimizations based on command line flags or node count
+        if args.turbo or sim_config['nodes'] >= 200:
+            shard_manager.enable_turbo_mode(True)
+            print("Turbo mode enabled for maximum speed")
+        elif args.fast or sim_config['nodes'] >= 100:
+            shard_manager.enable_fast_mode(True)
+            print("Fast mode enabled for improved performance")
+        
+        if args.load_threshold:
+            shard_manager.load_threshold_high = args.load_threshold
+            
+        shard_manager.assign_nodes_to_shards(nodes)
+        print(f"Sharding enabled: {args.shards} initial shards")
 
     coord_proc = env.process(coord(
         env, nodes, miners,
@@ -139,7 +144,8 @@ def main():
         blocks_limit, sim_config['blocksize'],
         sim_config['print'], sim_config['debug'],
         sim_config['wallets'], sim_config['transactions'],
-        sim_config['reward'], sim_config['halving']
+        sim_config['reward'], sim_config['halving'],
+        shard_manager
     ))
 
     env.run(until=coord_proc)

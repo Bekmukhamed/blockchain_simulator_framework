@@ -1,0 +1,27 @@
+{
+  "name": "Sharding",
+  "simulation": {
+    "nodes": 500,
+    "neighbors": 250,
+    "blocksize": 4096,
+    "blocktime": 600,
+    "miners": 500,
+    "hashrate": 1000000,
+    "wallets": 500,
+    "transactions": 1000,
+    "interval": 1.0,
+    "print": 50,
+    "debug": false,
+    "reward": 50.0,
+    "halving": 210000
+  },
+  "sharding": {
+    "initial_shards": 4,
+    "max_shards": 16,
+    "min_shards": 2,
+    "load_threshold_high": 80.0,
+    "load_threshold_low": 20.0,
+    "cross_shard_threshold": 0.3,
+    "adaptation_cooldown": 10
+  }
+}
