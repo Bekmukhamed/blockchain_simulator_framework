@@ -4,3 +4,6 @@ test.txt
 .gitignore
 test/
 README1.md
+danksharding_results/
+danksharding_experiments/
+

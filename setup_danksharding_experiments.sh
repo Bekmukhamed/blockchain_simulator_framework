@@ -47,7 +47,7 @@ for chain in "${CHAINS[@]}"; do
                 --nodes $nodes --neighbors $((nodes/4)) \
                 --miners $nodes --hashrate 1e6 \
                 --wallets 1000 --transactions 500 --interval 0.01 \
-                --print 50 --blocks 20 \
+                --print 50 \
                 > $RESULTS_DIR/baseline_${chain}_${nodes}nodes_run${run}.log 2>&1
 
             echo "Completed baseline: $chain $nodes nodes run $run"
@@ -63,7 +63,7 @@ for chain in "${CHAINS[@]}"; do
                     --nodes $nodes --neighbors $((nodes/4)) \
                     --miners $nodes --hashrate 1e6 \
                     --wallets 1000 --transactions 500 --interval 0.01 \
-                    --print 50 --blocks 20 \
+                    --print 50 \
                     --danksharding --parallel-shards $shards --tx-optimization 0.8 \
                     > $RESULTS_DIR/danksharding_${chain}_${nodes}nodes_${shards}shards_run${run}.log 2>&1
 
@@ -102,7 +102,7 @@ for nodes in "${NODES[@]}"; do
                     --nodes $nodes --neighbors $((nodes/4)) \
                     --miners $nodes --hashrate 1e6 \
                     --wallets 1000 --transactions 500 --interval 0.01 \
-                    --print 50 --blocks 20 \
+                    --print 50 \
                     --danksharding --parallel-shards $shards --tx-optimization $opt \
                     > $RESULTS_DIR/btc_${nodes}nodes_${shards}shards_opt${opt}_run${run}.log 2>&1
 
@@ -142,7 +142,7 @@ for chain in "${CHAINS[@]}"; do
                         --nodes $nodes --neighbors $((nodes/4)) \
                         --miners $nodes --hashrate 1e6 \
                         --wallets 1000 --transactions 500 --interval 0.01 \
-                        --print 50 --blocks 20 \
+                        --print 50 \
                         --danksharding --parallel-shards $shards --tx-optimization $opt \
                         > $RESULTS_DIR/${chain}_${nodes}nodes_${shards}shards_opt${opt}_run${run}.log 2>&1
 
@@ -180,7 +180,7 @@ for chain in "${CHAINS[@]}"; do
                     --nodes $nodes --neighbors $((nodes/4)) \
                     --miners $nodes --hashrate 1e6 \
                     --wallets 1000 --transactions 500 --interval 0.01 \
-                    --print 50 --blocks 20 \
+                    --print 50 \
                     --danksharding --parallel-shards 8 --tx-optimization $opt_level \
                     > $RESULTS_DIR/crosschain_${chain}_${nodes}nodes_opt${opt_level}_run${run}.log 2>&1
 
@@ -279,7 +279,7 @@ for nodes in "${NODES[@]}"; do
                     --nodes $nodes --neighbors $neighbors \
                     --miners $nodes --hashrate 1e6 \
                     --wallets 1000 --transactions 500 --interval 0.01 \
-                    --print 50 --blocks 20 \
+                    --print 50 \
                     --danksharding --parallel-shards $shards --tx-optimization 0.8 \
                     > $RESULTS_DIR/topology_${nodes}nodes_${conn_pct}pct_${shards}shards_run${run}.log 2>&1
 
@@ -486,3 +486,4 @@ echo ""
 echo "Results will be saved in danksharding_results/ subdirectories"
 echo ""
 echo "Estimated total runtime: 8-12 hours"
+
