@@ -219,7 +219,7 @@ for nodes in "${NODES[@]}"; do
                         --nodes $nodes --neighbors $((nodes/4)) \
                         --miners $nodes --hashrate 1e6 \
                         --wallets 1000 --transactions 1000 --interval 0.01 \
-                        --print 50 --blocks 15 \
+                        --print 50 \
                         > $RESULTS_DIR/${arch}_${nodes}nodes_run${run}.log 2>&1
                     ;;
                 "danksharding-moderate")
@@ -228,7 +228,7 @@ for nodes in "${NODES[@]}"; do
                         --nodes $nodes --neighbors $((nodes/4)) \
                         --miners $nodes --hashrate 1e6 \
                         --wallets 1000 --transactions 1000 --interval 0.01 \
-                        --print 50 --blocks 15 \
+                        --print 50 \
                         --danksharding --parallel-shards 8 --tx-optimization 0.7 \
                         > $RESULTS_DIR/${arch}_${nodes}nodes_run${run}.log 2>&1
                     ;;
@@ -238,7 +238,7 @@ for nodes in "${NODES[@]}"; do
                         --nodes $nodes --neighbors $((nodes/4)) \
                         --miners $nodes --hashrate 1e6 \
                         --wallets 1000 --transactions 1000 --interval 0.01 \
-                        --print 50 --blocks 15 \
+                        --print 50 \
                         --danksharding --parallel-shards 16 --tx-optimization 0.9 \
                         > $RESULTS_DIR/${arch}_${nodes}nodes_run${run}.log 2>&1
                     ;;
@@ -318,7 +318,7 @@ for nodes in "${NODES[@]}"; do
                     --nodes $nodes --neighbors $((nodes/4)) \
                     --miners $nodes --hashrate 1e6 \
                     --wallets 500 --transactions $txload --interval 0.001 \
-                    --print 25 --blocks 10 \
+                    --print 25 \
                     --danksharding --parallel-shards $shards --tx-optimization 0.9 \
                     > $RESULTS_DIR/extreme_${nodes}nodes_${txload}tx_${shards}shards_run${run}.log 2>&1
 
