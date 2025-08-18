@@ -4,6 +4,13 @@ import simulation.globals as sim_globals
 from .core.block import Block
 from .utils.formatter import human
 
+# Import parallel processing for Danksharding
+try:
+    from .core.parallel_shards import parallel_processor
+    PARALLEL_AVAILABLE = True
+except ImportError:
+    PARALLEL_AVAILABLE = False
+
 
 def coord(env, nodes, miners, bt, diff0, blocks_limit, blk_sz, print_int, dbg,
           wallets, tx_per_wallet, init_reward, halving_interval):
@@ -59,14 +66,69 @@ def coord(env, nodes, miners, bt, diff0, blocks_limit, blk_sz, print_int, dbg,
             if has_tx:
                 avail = len(sim_globals.pool)
                 take = min(avail, blk_sz)
-                pool_processed += take
-                for _ in range(take):
-                    sim_globals.pool.pop(0)
+                
+                # Danksharding PARALLEL optimization: Process transactions across shards
+                if sim_globals.danksharding_enabled and PARALLEL_AVAILABLE and take > 10:
+                    # Use parallel shard processing for any meaningful transaction set
+                    parallel_result = parallel_processor.parallel_block_processing(
+                        sim_globals.pool[:take], 
+                        take,
+                        num_workers=min(8, parallel_processor.num_shards)  # Use configured shards
+                    )
+                    
+                    # Remove processed transactions efficiently
+                    del sim_globals.pool[:parallel_result.get('total_processed', take)]
+                    pool_processed += parallel_result.get('total_processed', take)
+                    
+                    # Record parallel processing speedup
+                    if 'parallel_speedup' in parallel_result:
+                        sim_globals.parallel_speedup = parallel_result['parallel_speedup']
+                
+                elif sim_globals.danksharding_enabled:
+                    # Small batch optimization for small transaction sets
+                    if take > 0:
+                        batch_size = min(take, 1000)
+                        if batch_size > 0:
+                            for _ in range(0, take, batch_size):
+                                batch_take = min(batch_size, take - _)
+                                del sim_globals.pool[:batch_take]
+                        pool_processed += take
+                else:
+                    # Original slow processing
+                    pool_processed += take
+                    for _ in range(take):
+                        sim_globals.pool.pop(0)
+                
                 txs = take + 1
             else:
                 txs = 1
 
-            b = Block(bc, txs, dt)
+            # Create block with Danksharding optimizations
+            optimized_txs = 0
+            blobs = []
+            
+            if sim_globals.danksharding_enabled and txs > 1:
+                from .core.blobs import Blob, danksharding_config
+                
+                # Calculate how many transactions can be optimized
+                optimized_txs = int(txs * danksharding_config.tx_optimization_rate)
+                
+                # Create blobs for heavy transaction data
+                if winner.should_include_blobs() and optimized_txs > 0:
+                    blob_count = min(
+                        random.randint(1, danksharding_config.max_blobs_per_block),
+                        (optimized_txs // 100) + 1  # Roughly 1 blob per 100 optimized txs
+                    )
+                    
+                    for i in range(blob_count):
+                        # Simulate transaction data being moved to blobs
+                        blob_data = winner.create_blob_data(size=optimized_txs * 50)  # Data from optimized txs
+                        if blob_data:
+                            blob = Blob(f"txdata_{bc}_{i}", blob_data)
+                            blobs.append(blob)
+            
+            b = Block(bc, txs, dt, blobs=blobs, optimized_txs=optimized_txs)
+            
             sim_globals.total_tx += txs
 
             # Mint reward and halving

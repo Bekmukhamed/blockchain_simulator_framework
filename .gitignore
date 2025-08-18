@@ -2,3 +2,5 @@ __pycache__/
 test.txt
 .copilot/
 .gitignore
+test/
+README1.md

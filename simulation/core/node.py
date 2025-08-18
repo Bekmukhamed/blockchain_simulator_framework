@@ -52,6 +52,9 @@ class Node:
             
         if self.blocktime < 300:
             total_delay = total_delay * 0.1
+        
+        # Ensure delay is always positive (Danksharding can cause timing issues)
+        total_delay = max(0.001, total_delay)
             
         self._delay_cache[cache_key] = total_delay
         return total_delay
@@ -69,6 +72,10 @@ class Node:
     def receive(self, b, sender_node=None):
 
         yield self.env.timeout(0)
+        
+        # Danksharding: Handle blocks with blobs
+        if hasattr(b, 'blobs') and b.blobs:
+            self._process_blobs(b)
         
         if b.id in self.blocks:
             return
@@ -92,8 +99,33 @@ class Node:
                 self.env.process(neighbor.receive(b, sender_node=self))
     
     def _delayed_propagation(self, target_node, block, delay):
-        yield self.env.timeout(delay)
+        # Ensure delay is always positive to prevent SimPy errors
+        safe_delay = max(0.001, delay)  # Minimum 1ms delay
+        yield self.env.timeout(safe_delay)
         yield self.env.process(target_node.receive(block, sender_node=self))
+    
+    def _process_blobs(self, block):
+        """Process blobs in a received block for Danksharding"""
+        if not sim_globals.danksharding_enabled:
+            return 0
+            
+        blob_count = len(block.blobs)
+        total_blob_size = sum(blob.size for blob in block.blobs)
+        
+        # Update global blob metrics
+        sim_globals.total_blobs_processed += blob_count
+        sim_globals.total_blob_data += total_blob_size
+        
+        # Optimized blob processing: much faster than regular transactions
+        # Since blob data is separate from execution, processing is parallelizable
+        verification_delay = blob_count * 0.0001  # 0.1ms per blob (10x faster than before)
+        
+        # If block has optimized transactions, they process faster too
+        if hasattr(block, 'optimized_txs') and block.optimized_txs > 0:
+            # Optimized transactions process 5x faster
+            verification_delay += block.optimized_txs * 0.0002  # 0.2ms per optimized tx
+        
+        return verification_delay
     
     def get_network_delay_to(self, target_node, message_size):
         if target_node is None:

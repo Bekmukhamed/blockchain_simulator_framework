@@ -1,0 +1,10 @@
+{
+  "danksharding": {
+    "enabled": false,
+    "max_blobs_per_block": 6,
+    "max_blob_size": 131072,
+    "blob_base_fee": 1,
+    "shard_count": 64,
+    "blob_inclusion_probability": 0.3
+  }
+}

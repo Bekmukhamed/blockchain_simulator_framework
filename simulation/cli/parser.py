@@ -22,6 +22,13 @@ def parse_args():
     p.add_argument("--halving", dest="halving_interval", type=int, default=210000)
     p.add_argument("--chain", type=str)
     p.add_argument("--workload", type=str)
+    
+    # Danksharding arguments
+    p.add_argument("--danksharding", action="store_true", help="Enable Danksharding optimization")
+    p.add_argument("--parallel-shards", type=int, default=1, help="Number of parallel shards for Danksharding")
+    p.add_argument("--max-blobs", type=int, default=6, help="Maximum blobs per block")
+    p.add_argument("--tx-optimization", type=float, default=0.5, help="Transaction optimization level (0.0-1.0)")
+    
     args = p.parse_args()
 
     merged = get_defaults(args)
@@ -32,8 +39,8 @@ def parse_args():
     if args.blocks_limit is None and args.years:
         args.blocks_limit = int(args.years * YEAR / args.blocktime)
 
-    # Workload check
-    if args.transactions > 0:
+    # Workload check - now that we have defaults
+    if args.transactions > 0 and args.blocksize and args.wallets:
         total_tx = args.wallets * args.transactions
         est_blocks = block_check.validate_blocks_count(total_tx, args.blocksize, args.blocks_limit)
         if args.blocks_limit is None:
